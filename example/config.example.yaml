@@ -1,0 +1,9 @@
+# Example configuration for nameless
+positionalThresholdPublic: 1
+positionalThresholdPrivate: 0
+allowedPositionalNames:
+  - ref
+  - message
+excludeGlobs:
+  - build/
+  - .dart_tool/
