@@ -3,10 +3,10 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:fpdart/fpdart.dart';
 
-import '../entities/config.dart';
-import '../entities/finding.dart';
-import '../failures/failure.dart';
-import '../repositories/file_repository.dart';
+import '../../domain/entities/config.dart';
+import '../../domain/entities/finding.dart';
+import '../../domain/failures/failure.dart';
+import '../../domain/repositories/file_repository.dart';
 
 typedef IntPair = ({int item1, int item2});
 

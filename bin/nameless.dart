@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:nameless/src/data/repositories/config_repository_impl.dart';
 import 'package:nameless/src/data/repositories/file_repository_impl.dart';
-import 'package:nameless/src/domain/usecases/scan_codebase_use_case.dart';
+import 'package:nameless/src/application/usecases/scan_codebase_use_case.dart';
 import 'commands/config.dart';
 
 const String version = '1.0.0';

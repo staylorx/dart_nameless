@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:nameless/nameless.dart';
-import 'package:nameless/src/data/dtos/config_dto.dart';
 import 'package:shouldly/shouldly.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
