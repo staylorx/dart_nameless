@@ -18,7 +18,11 @@ class ApplicationFacade {
   factory ApplicationFacade.withDefaults() {
     final fileRepo = FileRepositoryImpl();
     final configRepo = ConfigRepositoryImpl();
-    final usecase = ScanCodebaseUseCase(fileRepo);
+    final checkParamsUseCase = CheckParametersUseCase();
+    final usecase = ScanCodebaseUseCase(
+      fileRepo,
+      checkParametersUseCase: checkParamsUseCase,
+    );
     return ApplicationFacade(
       scanCodebaseUseCase: usecase,
       configRepository: configRepo,

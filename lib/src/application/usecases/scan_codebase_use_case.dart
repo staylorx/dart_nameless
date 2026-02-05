@@ -7,13 +7,19 @@ import '../../domain/entities/config.dart';
 import '../../domain/entities/finding.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/file_repository.dart';
+import 'check_parameters_use_case.dart';
 
 typedef IntPair = ({int item1, int item2});
 
 class ScanCodebaseUseCase {
   final FileRepository fileRepository;
+  final CheckParametersUseCase checkParametersUseCase;
 
-  ScanCodebaseUseCase(this.fileRepository);
+  ScanCodebaseUseCase(
+    this.fileRepository, {
+    CheckParametersUseCase? checkParametersUseCase,
+  }) : checkParametersUseCase =
+           checkParametersUseCase ?? CheckParametersUseCase();
 
   TaskEither<Failure, List<Finding>> call({
     required String rootPath,
@@ -51,6 +57,7 @@ class ScanCodebaseUseCase {
           content: content,
           config: config,
           findings: findings,
+          checkParametersUseCase: checkParametersUseCase,
         );
         unit.accept(visitor);
         return TaskEither.right(findings);
@@ -66,12 +73,14 @@ class _DeclarationVisitor extends GeneralizingAstVisitor<void> {
   final String content;
   final Config config;
   final List<Finding> findings;
+  final CheckParametersUseCase checkParametersUseCase;
 
   _DeclarationVisitor({
     required this.filePath,
     required this.content,
     required this.config,
     required this.findings,
+    required this.checkParametersUseCase,
   });
 
   void _checkFormalParameters({
@@ -79,43 +88,13 @@ class _DeclarationVisitor extends GeneralizingAstVisitor<void> {
     required AstNode node,
     required bool isPublic,
   }) {
-    if (params == null) return;
-    final src = params.toSource();
-    final inside = src.substring(1, src.length - 1); // remove parens
-    // Determine required positional part (before '[' or '{')
-    final idxBrace = inside.indexOf('[');
-    final idxCurly = inside.indexOf('{');
-    int cut = inside.length;
-    if (idxBrace >= 0) cut = idxBrace;
-    if (idxCurly >= 0 && idxCurly < cut) cut = idxCurly;
-    final requiredPart = inside.substring(0, cut).trim();
-    if (requiredPart.isEmpty) return;
-    final parts = requiredPart
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
-    final positionalCount = parts.length;
-    final paramNames = <String>[];
-    for (final p in parts) {
-      // crude: take last identifier-like token
-      final matches = RegExp(
-        r"[A-Za-z_]\w*",
-      ).allMatches(p).map((m) => m.group(0)!).toList();
-      if (matches.isNotEmpty) paramNames.add(matches.last);
-    }
+    final result = checkParametersUseCase(
+      params: params,
+      isPublic: isPublic,
+      config: config,
+    );
 
-    bool isProblem = false;
-    final threshold = isPublic
-        ? config.positionalThresholdPublic
-        : config.positionalThresholdPrivate;
-    if (positionalCount > threshold) isProblem = true;
-    if (threshold == 1 && positionalCount == 1) {
-      final name = paramNames.isNotEmpty ? paramNames.first : '';
-      if (!config.allowedPositionalNames.contains(name)) isProblem = true;
-    }
-
-    if (isProblem) {
+    if (result.requiresNamedParameters) {
       final offset = node.offset;
       final loc = _offsetToLineColumn(content: content, offset: offset);
       final decl = node.toSource().split('\n').first;
@@ -125,7 +104,7 @@ class _DeclarationVisitor extends GeneralizingAstVisitor<void> {
           line: loc.item1,
           column: loc.item2,
           declaration: decl,
-          positionalParamNames: paramNames,
+          positionalParamNames: result.parameterNames,
         ),
       );
     }
