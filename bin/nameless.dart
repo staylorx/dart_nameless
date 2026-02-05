@@ -1,9 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:nameless/src/data/repositories/config_repository_impl.dart';
-import 'package:nameless/src/data/repositories/file_repository_impl.dart';
-import 'package:nameless/src/application/usecases/scan_codebase_use_case.dart';
+import 'package:nameless/src/application/application_facade.dart';
 import 'commands/config.dart';
 
 const String version = '1.0.0';
@@ -77,13 +75,11 @@ Future<void> main(List<String> arguments) async {
         ? results.rest.first
         : Directory.current.path;
 
-    // Dependency injection
-    final configRepo = ConfigRepositoryImpl();
-    final fileRepo = FileRepositoryImpl();
-    final useCase = ScanCodebaseUseCase(fileRepo);
+    // Use the application facade for wiring and convenience methods
+    final facade = ApplicationFacade.withDefaults();
 
-    // Load config
-    final configEither = await configRepo
+    // Load config via the facade's repository (so we can show verbose info)
+    final configEither = await facade.configRepository
         .loadConfig(configPath: configPath ?? '')
         .run();
     final config = configEither.match((failure) {
@@ -98,8 +94,8 @@ Future<void> main(List<String> arguments) async {
       );
     }
 
-    final findingsEither = await useCase
-        .call(rootPath: path, config: config)
+    final findingsEither = await facade
+        .scan(rootPath: path, config: config)
         .run();
     final findings = findingsEither.match((failure) {
       stdout.writeln('Scan error: $failure');
