@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:fpdart/fpdart.dart';
 import 'package:yaml/yaml.dart';
@@ -53,5 +54,25 @@ class ConfigRepositoryImpl implements ConfigRepository {
       file.writeAsStringSync(yaml);
       return unit;
     }, (error, stack) => FileSystemFailure(error.toString()));
+  }
+
+  @override
+  TaskEither<Failure, Config> loadFromJsonString({required String jsonString}) {
+    return TaskEither.tryCatch(() async {
+      final decoded = jsonDecode(jsonString);
+      final map = decoded is Map
+          ? Map<String, dynamic>.from(decoded)
+          : <String, dynamic>{};
+      final dto = ConfigDto.fromJson(map);
+      return dto.toEntity();
+    }, (error, stack) => ParseFailure(error.toString()));
+  }
+
+  @override
+  TaskEither<Failure, Config> loadFromYamlString({required String yamlString}) {
+    return TaskEither.tryCatch(() async {
+      final cfg = ConfigDto.fromYamlString(yamlString);
+      return cfg;
+    }, (error, stack) => ParseFailure(error.toString()));
   }
 }
