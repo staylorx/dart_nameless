@@ -2,7 +2,7 @@ name: nameless
 description: A sample command-line application with basic argument parsing.
 version: 1.0.0
 license: MIT
-repository: https://github.com/staylorx/nameless
+repository: https://github.com/staylorx/dart_nameless
 executables:
   nameless: bin/nameless.dart
 
