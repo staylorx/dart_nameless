@@ -1,7 +1,7 @@
 Named Params — CLI scanner and custom lint for positional parameters
 
-This package provides both a CLI scanner and a custom_lint analysis plugin that
-scan Dart source and report function, method, and constructor signatures that
+This package provides a CLI scanner that
+scans Dart source and report function, method, and constructor signatures that
 use positional parameters where named parameters may be preferable. It is
 reporting-only (no automatic fixes) and designed to be reusable as a library,
 run as a CLI tool, or integrated as a lint rule in analysis_options.yaml.
